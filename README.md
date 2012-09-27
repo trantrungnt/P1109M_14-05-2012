@@ -12,6 +12,4 @@ P1109M_14-05-2012
 
 **Credit**
 
-* Bản quyền (C) năm 2012 bởi:
-
-[Trường AiTi Aptech](http://aiti-aptech.edu.vn/)
+* Bản quyền (C) năm 2012 bởi: [Trường AiTi Aptech](http://aiti-aptech.edu.vn/)
