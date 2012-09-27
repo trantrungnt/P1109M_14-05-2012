@@ -1,0 +1,54 @@
+Bai3:
+3.1:
+create or replace view v1 as select Pro_name,Pro_cost,Sup_name,Mar_name from tblProducts,tblMarkets,tblSupplies where tblProducts.Sup_id=tblSupplies.Sup_id and tblProducts.Pro_code=tblMarkets.Pro_code;
+3.2:
+create or replace view v2 as select Pro_name,Pro_code,Pro_cost,Pro_quantity from tblProducts where Pro_code NOT IN ( select Pro_code from tblMarkets);
+3.4:
+create or replace view v4 as select Pro_name,Mar_name,Mar_pro_quantity,Sup_name from tblProducts,tblMarkets,tblSupplies where tblProducts.Sup_id = (select max(Sup_id) from tblProducts);
+Bai4:
+(a):
+
+delimiter //
+
+create PROCEDURE b4a()
+
+begin
+
+create view vmax_pro_quantity  as
+
+select max(Pro_quantity) as max_quantity
+
+from tblProducts
+
+limit 1;
+
+select Pro_name, Pro_code, Sup_name, Pro_quantity
+
+from tblProducts, tblSupplies, vmax_pro_quantity
+
+where tblProducts.Sup_id = tblSupplies.Sup_id and Pro_quantity = (select max_quantity from vmax_pro_quantity );
+
+end //
+
+(b):
+
+create PROCEDURE b4b()
+
+begin
+
+create view vmax_pro_cost as
+
+select max(Pro_cost) as max_cost
+
+from tblProducts
+
+limit 1;
+
+select Pro_name, Pro_code, Pro_date
+
+from tblProducts, vmax_pro_cost
+
+where Pro_cost = (select max_cost from vmax_pro_cost);
+
+end //
+

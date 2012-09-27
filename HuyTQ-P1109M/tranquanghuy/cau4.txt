@@ -1,0 +1,27 @@
+cau4.a
+delimiter //
+CREATE PROCEDURE mar_prodmostqua()
+begin
+drop view if exists prod_max_quan ;
+create view prod_max_quan  as
+select max(pro_quanity) as maxQuan
+from tblproducts
+limit 1;
+select pro_name, pro_code, sup_name, pro_quanity
+from tblproducts, tblsupplies, prod_max_quan
+where tblproducts.sup_id = tblsupplies.sup_id and pro_quanity = (select max_quantily from view_pro_max_quantily );
+end //
+ 
+4.b
+delimiter //
+CREATE PROCEDURE mar_prodmaxcost()
+begin
+drop view if exists prodmaxcost;
+create view prodmaxcost as
+select max(pro_cost) as maxCost
+from tblproducts
+limit 1;
+select pro_name, pro_code, pro_date
+from tblproducts, prodmaxcost
+where pro_cost = (select max_cost from prodmaxcost);
+end //

@@ -1,0 +1,23 @@
+
+CREATE VIEW view31(pro_name, pro_cost, sup_name, mar_name) AS
+    SELECT pro_name, pro_cost, sup_name, mar_name 
+    FROM tblmarkets AS mar INNER JOIN tblproducts AS pro ON mar.pro_code=pro.pro_code
+        INNER JOIN tblsupplies AS sup ON sup.sup_id=b.sup_id;
+
+
+3.2
+CREATE VIEW view32(pro_code, pro_name, pro_price, pro_quantity) AS
+    SELECT pro.pro_code, mar.pro_name, pro.pro_cost, pro.pro_quantity 
+        FROM tblproducts AS pro INNER JOIN tblmarkets AS mar ON pro.pro_code==mar.pro_code;
+3.4
+CREATE VIEW view34(pro_name, mar_name, mar_pro_quantity, sup_name ) AS
+    SELECT pro_name, mar_name, mar_pro_quantity, sup_name 
+        FROM tblmarkets AS mar INNER JOIN tblproducts AS pro ON mar.pro_code=pro.pro_code
+                                                            INNER JOIN tblsupplies AS sup ON sup.sup_id=pro.sup_id
+                WHERE nar.mar_pro_quantity = ( SELECT pro.mar_pro_quantity) FROM tblmarkets AS mar);
+
+3.5
+CREATE VIEW view35(pro_name, pro_code,pro_quantity,sup_name) AS
+    SELECT pro_name, pro_code, pro_quantity, sup_name 
+        FROM tblproducts AS a INNER JOIN tblsupplies AS b ON a.sup_id=b.sup_id
+            WHERE a.pro_cost = (SELECT MIN(a.pro_cost) FROM tblproducts AS a);

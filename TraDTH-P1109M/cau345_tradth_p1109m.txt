@@ -1,0 +1,139 @@
+﻿------------Cau3:---------------
+
+---------3.1--------
+CREATE VIEW view31(pro_name, pro_cost, sup_name, mar_name) AS
+	SELECT pro_name, pro_cost, sup_name, mar_name 
+	FROM tblmarkets AS a INNER JOIN tblproducts AS b ON a.pro_code=b.pro_code
+		INNER JOIN tblsupplies AS c ON c.sup_id=b.sup_id;
+
+---------3.2--------
+CREATE VIEW view32 AS 
+  SELECT a.pro_name, a.pro_code, a.pro_cost, a.pro_quantity
+     FROM tblproducts AS a
+        WHERE pro_code NOT IN (SELECT b.pro_code FROM tblMarkets AS b);
+
+---------3.3--------
+
+
+---------3.4--------
+CREATE VIEW view34 AS
+	SELECT pro_name, mar_name, mar_pro_quantity, sup_name 
+		FROM tblmarkets AS a INNER JOIN tblproducts AS b ON a.pro_code=b.pro_code
+			INNER JOIN tblsupplies AS c ON c.sup_id=b.sup_id
+				WHERE a.mar_pro_quantity = ( SELECT MAX(a.mar_pro_quantity) FROM tblmarkets AS a);
+
+
+---------3.5--------
+CREATE VIEW view35(pro_name, pro_code,pro_quantity,sup_name) AS
+	SELECT pro_name, pro_code, pro_quantity, sup_name 
+		FROM tblproducts AS a INNER JOIN tblsupplies AS b ON a.sup_id=b.sup_id
+			WHERE a.pro_cost = (SELECT MIN(a.pro_cost) FROM tblproducts AS a);
+
+
+-----------Cau4---------------
+----------4.a----------
+
+delimiter //
+
+CREATE PROCEDURE products_mostquantity()
+
+begin
+
+drop view if exists pro_max_quantity ;
+
+create view pro_max_quantity  as
+
+select max(pro_quantity) as max_quantity
+
+from tblproducts
+
+limit 1;
+
+select pro_name, pro_code, sup_name, pro_quantity
+
+from tblproducts, tblsupplies, pro_max_quantity
+
+where tblproducts.sup_id = tblsupplies.sup_id and pro_quantity = (select max_quantity from pro_max_quantity );
+
+end //
+
+-------------4.b----------
+
+delimiter //
+
+CREATE PROCEDURE products_maxcost()
+
+begin
+
+drop view if exists products_max_cost;
+
+create view products_max_cost as
+
+select max(pro_cost) as max_cost
+
+from tblproducts
+
+limit 1;
+
+select pro_name, pro_code, pro_date
+
+from tblproducts, products_max_cost
+
+where pro_cost = (select max_cost from products_max_cost);
+
+end //
+
+----------4.c----------
+
+delimiter //
+
+CREATE PROCEDURE products_mostsold()
+
+begin
+
+drop view if exists products_most_sold;
+
+create view products_most_sold as
+
+select count(mar_id) as most_sold, pro_code as products_max_code
+
+from tblmarkets
+
+where 1 = 1
+
+group by pro_code
+
+order by most_sold desc
+
+limit 1;
+
+select pro_name, tblproducts.pro_code, mar_name
+
+from tblproducts, tblmarkets
+
+where tblproducts.pro_code = tblmarkets.pro_code and tblproducts.pro_code = (select products_max_code from products_most_sold);
+
+end //
+
+
+---------Cau5------------
+delimiter //
+CREATE TRIGGER 	trigger_Update
+AFTER UPDATE ON tblproducts
+FOR EACH ROW
+BEGIN
+    INSERT INTO tblbk_product(pro_code,pro_name,pro_cost,pro_quantity,pro_date,sup_id)
+    VALUES(old.pro_code,old.pro_name,old.pro_cost,old.pro_quantity,old.pro_date,old.sup_id);
+END;
+
+//
+Delete
+delimiter //
+CREATE TRIGGER trigger_product
+AFTER DELETE ON tblproducts
+FOR EACH ROW
+BEGIN
+    INSERT INTO tblbk_product(pro_code,pro_name,pro_cost,pro_quantity,pro_date,sup_id)
+    VALUES(old.pro_code,old.pro_name,old.pro_cost,old.pro_quantity,old.pro_date,old.sup_id);
+END;
+//

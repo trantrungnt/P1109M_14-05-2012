@@ -1,0 +1,26 @@
+create table bk_products
+( pro_code char(50) primary key,
+pro_name varchar(250),
+pro_cost int,
+pro_quantity int,
+pro_date date,
+sup_id int
+);
+drop trigger if exists afterdelete;
+delimiter //
+CREATE TRIGGER afterdelete
+AFTER delete ON tblproducts
+FOR EACH ROW
+BEGIN
+insert into bk_products values(old.pro_code,old.pro_name,old.pro_cost,old.pro_quantity,old.pro_date,old.sup_id);
+ END//
+delimiter ;
+drop trigger if exists afterupdate;
+delimiter //
+CREATE TRIGGER afterupdate
+AFTER update ON tblproducts
+FOR EACH ROW
+BEGIN
+insert into bk_products values(old.pro_code,old.pro_name,old.pro_cost,old.pro_quantity,old.pro_date,old.sup_id);
+ END//
+delimiter ;

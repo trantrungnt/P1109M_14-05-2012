@@ -1,0 +1,134 @@
+// Cau 1
+create database MarkDB;
+
+use MarkDB;
+
+
+create table tblSupplies(
+	Sup_id int primary key auto_increment,
+	Sup_name varchar(100),
+	Sup_address varchar(350)
+	);
+
+
+create table tblProducts(
+     	Pro_code char(5) primary key,
+     	Pro_name varchar(250),
+    	Pro_cost int,
+   	Pro_quantity int,
+    	Pro_date Date,
+   	Sup_id int references tblSupplies(Sup_id)
+   	);
+
+create table tblMarkets(
+	Mar_id int auto_increment primary key,
+	Mar_name varchar(200),
+	Mar_pro_quantity int,
+	Pro_code char(5) references tblProducts(Pro_code),
+	Mar_price_plus float
+	);
+
+// Cau 2
+
+INSERT INTO tblSupplies VALUES(1,'HP','1145 Compaq Center Driver, Houston, Texas 770770 USA'),
+			      (2,'DELL',' Way Round Rock , Texas 78682 USA'),
+                              (3, 'ACER','8F, No.88, Section 1, Hsin Tai Wu Road.,Hsichih 221, Taipei,Taipei Hsien, Taiwan'),
+			      (4, 'IBM', 'Kevin O'malley House, Earlsfort Center, Earlsfort Terrace, Dublin 2,Ireland');
+
+INSERT INTO tblProducts VALUES ('HC631', 'Compaq nx 6310', '750', '150', '2006-10-12', '1'),
+                               ('HC415', 'Pavilion 4105TX', '680', '1000', '2008-08-21', '1'),
+                               ('DR071', 'Inspiron 17R', '908', '520', '2009-03-15', '2'),
+                               ('AS255', 'Aspire One D255', '325', '1650', '2008-11-20', '3'),
+                               ('IB060', 'ThikPad T60', '415', '1200', '2009-03-28', '4');
+
+INSERT INTO tblMarkets VALUES ('1', 'Maxi', '50', 'HC631', '12'),
+                              ('2', '7-Eleven', '200', 'DR017', '18'),
+                              ('3', 'Migros', '1000', 'AS255', '15'),
+                              ('4', 'Costco', '430', 'AS255', '12'),
+                              ('5', 'Coop Norden', '950', 'IB060', '14');
+
+// Cau 3
+3.1
+
+create view myview1
+    (pro_name, Pro_cost, Sup_name, Mar_name) as
+     select p.pro_name, p.pro_cost, s.sup_name, m.mar_name
+     from tblProducts p, tblSupplies s, tblMarkets m
+     where p.pro_code=m.pro_code and p.sup_id=s.sup_id;
+
+3.2
+
+create view myview2 as
+     select pro_name, pro_code, pro_cost, pro_quantity
+     from tblproducts 
+     where pro_code not in
+     (select pro_code from tblMarkets);
+3.3
+
+3.4
+CREATE VIEW view4(Pro_name, Mar_name, Mar_pro_quantity, Sup_name ) AS
+    SELECT Pro_name, Mar_name, Mar_pro_quantity, Sup_name 
+        FROM tblMarkets  INNER JOIN tblProducts  ON tblMarkets.Pro_code=tblProducts.Pro_code
+                                                            INNER JOIN tblSupplies  ON tblSupplies.Sup_id=tblProducts.Sup_id
+                WHERE tblMarkets.Mar_pro_quantity = ( SELECT MAtblMarkets.Mar_pro_quantity) FROM tblMarkets);
+3.5
+create view myview5
+	(pro_name, pro_code,pro_quantity,sup_name) AS
+    	SELECT pro_name, pro_code, pro_quantity, sup_name 
+        FROM tblproducts AS p INNER JOIN tblsupplies AS s ON p.sup_id=s.sup_id
+            WHERE p.pro_cost = (SELECT MIN(p.pro_cost) FROM tblproducts AS p);
+// cau 4
+a
+    delimiter //
+    CREATE PROCEDURE procedure_41()
+    begin
+    drop view if exists view_pro_max_quantity ;
+    create view view_pro_max_quantity  as
+    select mapro_quantity) as max_quantity
+    from tblproducts
+    limit 1;
+    select pro_name, pro_code, sup_name, pro_quantity
+    from tblproducts, tblsupplies, view_pro_max_quantity
+    where tblproducts.sup_id = tblsupplies.sup_id and pro_quantity = (select max_quantity from view_pro_max_quantity );
+    end //
+
+b
+    delimiter //
+    CREATE PROCEDURE tig_promaxcost_select()
+    begin
+    drop view if exists view_pro_max_cost;
+    create view view_pro_max_cost as
+    select max(pro_cost) as max_cost
+    from tblproducts
+    limit 1;
+    select pro_name, pro_code, pro_date
+    from tblproducts, view_pro_max_cost
+    where pro_cost = (select max_cost from view_pro_max_cost);
+    end //
+
+c
+    delimiter //
+    CREATE PROCEDURE tig_promostsold_select()
+    begin
+    drop view if exists view_pro_most_sold;
+    create view view_pro_most_sold as
+    select count(mar_id) as most_sold, pro_code as pro_max_code
+    from tblmarkets
+    where 1 = 1
+    group by pro_code
+    order by most_sold desc
+    limit 1;
+    select pro_name, tblproducts.pro_code, mar_name
+    from tblproducts, tblmarkets
+    where tblproducts.pro_code = tblmarkets.pro_code and tblproducts.pro_code = (select pro_max_code from view_pro_most_sold);
+    end //
+
+// cau 5
+   
+   CREATE TRIGGER marketdb_productUpdate
+   AFTER UPDATE ON tblproducts
+   FOR EACH ROW
+   BEGIN
+   INSERT INTO tblbk_product(pro_code,pro_name,pro_cost,pro_quantity,pro_date,sup_id)
+   VALUES(old.pro_code,old.pro_name,old.pro_cost,old.pro_quantity,old.pro_date,old.sup_id);
+   END;

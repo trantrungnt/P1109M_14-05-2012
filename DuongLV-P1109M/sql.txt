@@ -1,0 +1,128 @@
+Bai 3.
+3.1
+CREATE VIEW view_1 AS 
+SELECT pro_name,pro_cost,sup_name,mar_name
+FROM tblmarkets as m INNER JOIN tblproducts as p ON m.pro_code=p.pro_code
+INNER JOIN tblsupplies AS s ON p.sup_id=s.sup_id; 
+3.2
+CREATE VIEW view_2 AS
+SELECT P.pro_code, P.pro_name, P.pro_cost, P.pro_quantity
+FROM tblProducts as P
+WHERE P.pro_code NOT IN( SELECT pro_code FROM tblMarkets WHERE
+1=1);
+3.4
+CREATE VIEW view_4 AS
+SELECT pro_name, mar_name, mar_pro_quantity, sup_name
+FROM tblmarkets AS m INNER JOIN tblproducts AS p ON m.pro_code=p.pro_code
+INNER JOIN tblsupplies as s ON s.sup_id=p.sup_id
+WHERE m.mar_pro_quantity = ( SELECT MAX(m.mar_pro_quantity) FROM tblmarkets AS m);
+3.5
+CREATE VIEW view_5 AS
+SELECT pro_name, pro_code, pro_quantity, sup_name
+FROM tblproducts AS p INNER JOIN tblsupplies AS s ON p.sup_id=s.sup_id
+WHERE pro_cost = (SELECT MIN(pro_cost) FROM tblproducts);
+
+
+
+Bai 4
+4.a
+delimiter //
+
+CREATE PROCEDURE tig_mostquanity()
+
+begin
+
+drop view if exists pro_max_quantily ;
+
+create view pro_max_quantily  as
+
+select max(pro_quanity) as max_quantily
+
+from tblproducts
+
+limit 1;
+
+select pro_name, pro_code, sup_name, pro_quanity
+
+from tblproducts, tblsupplies, pro_max_quantily
+
+where tblproducts.sup_id = tblsupplies.sup_id and pro_quanity = (select max_quantily from pro_max_quantily );
+
+end //
+4.b
+delimiter //
+
+CREATE PROCEDURE tig_maxcost()
+
+begin
+
+drop view if exists pro_max_cost;
+
+create view pro_max_cost as
+
+select max(pro_cost) as max_cost
+
+from tblproducts
+
+limit 1;
+
+select pro_name, pro_code, pro_date
+
+from tblproducts, pro_max_cost
+
+where pro_cost = (select max_cost from pro_max_cost);
+
+end //
+4.c
+delimiter //
+
+CREATE PROCEDURE tig_mostsold()
+
+begin
+
+drop view if exists pro_most_sold;
+
+create view pro_most_sold as
+
+select count(mar_id) as most_sold, pro_code as pro_max_code
+
+from tblmarkets
+
+where 1 = 1
+
+group by pro_code
+
+order by most_sold desc
+
+limit 1;
+
+select pro_name, tblproducts.pro_code, mar_name
+
+from tblproducts, tblmarkets
+
+where tblproducts.pro_code = tblmarkets.pro_code and tblproducts.pro_code = (select pro_max_code from pro_most_sold);
+
+end //
+
+
+Bai 5
+Update
+delimiter //
+CREATE TRIGGER m_productUpdate
+AFTER UPDATE ON tblproducts
+FOR EACH ROW
+BEGIN
+	INSERT INTO tblbk_product(pro_code,pro_name,pro_cost,pro_quantity,pro_date,sup_id)
+	VALUES(old.pro_code,old.pro_name,old.pro_cost,old.pro_quantity,old.pro_date,old.sup_id);
+END;
+//
+Delete
+delimiter //
+CREATE TRIGGER mdb_product
+AFTER DELETE ON tblproducts
+FOR EACH ROW
+BEGIN
+	INSERT INTO tblbk_product(pro_code,pro_name,pro_cost,pro_quantity,pro_date,sup_id)
+	VALUES(old.pro_code,old.pro_name,old.pro_cost,old.pro_quantity,old.pro_date,old.sup_id);
+END;
+//

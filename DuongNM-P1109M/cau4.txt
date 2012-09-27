@@ -1,0 +1,81 @@
+delimiter //
+
+CREATE PROCEDURE tig_promostquanity_select()
+
+begin
+
+drop view if exists view_pro_max_quantity ;
+
+create view view_pro_max_quantity  as
+
+select max(pro_quantity) as max_quantity
+
+from tblproducts
+
+limit 1;
+
+select pro_name, pro_code, sup_name, pro_quanity
+
+from tblproducts, tblsupplies, view_pro_max_quantity
+
+where tblproducts.sup_id = tblsupplies.sup_id and pro_quantity = (select max_quantity from view_pro_max_quantity );
+
+end //
+
+
+delimiter //
+
+CREATE PROCEDURE tig_promaxcost_select()
+
+begin
+
+drop view if exists view_pro_max_cost;
+
+create view view_pro_max_cost as
+
+select max(pro_cost) as max_cost
+
+from tblproducts
+
+limit 1;
+
+select pro_name, pro_code, pro_date
+
+from tblproducts, view_pro_max_cost
+
+where pro_cost = (select max_cost from view_pro_max_cost);
+
+end //
+
+
+
+
+delimiter //
+
+CREATE PROCEDURE tig_promostsold_select()
+
+begin
+
+drop view if exists view_pro_most_sold;
+
+create view view_pro_most_sold as
+
+select count(mar_id) as most_sold, pro_code as pro_max_code
+
+from tblmarkets
+
+where 1 = 1
+
+group by pro_code
+
+order by most_sold desc
+
+limit 1;
+
+select pro_name, tblproducts.pro_code, mar_name
+
+from tblproducts, tblmarkets
+
+where tblproducts.pro_code = tblmarkets.pro_code and tblproducts.pro_code = (select pro_max_code from view_pro_most_sold);
+
+end //
